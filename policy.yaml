@@ -1,0 +1,55 @@
+hashing:
+
+  algorithm: argon2id
+
+  bcrypt:
+    cost: 14
+
+  argon2:
+    time: 3
+    memory: 65536
+    threads: 4
+    keyLen: 32
+
+policies:
+
+  length:
+    enabled: true
+    min: 8
+    max: 128
+
+  entropy:
+    enabled: true
+    min_entropy: 45
+    blacklist: 
+      - password
+      - admin
+      - 123
+    blacklist_boost: 8
+
+  sequence:
+    enabled: true
+    max_sequence: 3
+
+  category:
+    enabled: true
+    rules:
+      - name: uppercase
+        enabled: true
+        min: 1
+        predicate: upper
+
+      - name: lowercase
+        enabled: true
+        min: 1
+        predicate: lower
+
+      - name: number
+        enabled: true
+        min: 1
+        predicate: number
+
+      - name: special
+        enabled: true
+        min: 1
+        predicate: special
