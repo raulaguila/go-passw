@@ -63,11 +63,10 @@ func (r *CategoryRule) Validate(p string) *errors.ValidationError {
 		for name, v := range missing {
 			parts = append(parts, fmt.Sprintf("%s (min %d, found %d)", name, v["required"], v["found"]))
 		}
-		return &errors.ValidationError{
-			Code:    "CATEGORY_MIN_NOT_MET",
-			Message: "Category requirements not met: " + strings.Join(parts, ", "),
-			Details: map[string]any{"categories": missing},
-		}
+		return errors.New("CATEGORY_MIN_NOT_MET", "Category requirements not met: "+strings.Join(parts, ", ")).WithDetails(map[string]any{
+			"categories": missing,
+		})
 	}
+
 	return nil
 }

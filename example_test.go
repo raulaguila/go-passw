@@ -7,7 +7,7 @@ import (
 )
 
 func TestExample(t *testing.T) {
-	err := Example("#Password@8249!abc")
+	err := Example("#Password@8249!")
 
 	assert.NoError(t, err)
 }

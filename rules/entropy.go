@@ -35,16 +35,12 @@ func (e EntropyRule) Validate(password string) *errors.ValidationError {
 	finalEntropy := entropy - penalty
 
 	if finalEntropy < e.MinEntropy {
-		return &errors.ValidationError{
-			Code:    "LOW_ENTROPY",
-			Message: "Weak password: insufficient entropy",
-			Details: map[string]any{
-				"entropy":       entropy,
-				"penalty":       penalty,
-				"final_entropy": finalEntropy,
-				"required":      e.MinEntropy,
-			},
-		}
+		return errors.New("LOW_ENTROPY", "Weak password: insufficient entropy").WithDetails(map[string]any{
+			"entropy":       entropy,
+			"penalty":       penalty,
+			"final_entropy": finalEntropy,
+			"required":      e.MinEntropy,
+		})
 	}
 
 	return nil

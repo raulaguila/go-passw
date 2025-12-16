@@ -26,7 +26,10 @@ func (r *SequenceRule) Validate(p string) *errors.ValidationError {
 		if runes[i] == runes[i-1]+1 {
 			count++
 			if count > r.Max {
-				return errors.New("SEQUENCE_TOO_LONG", "predictable sequence detected")
+				return errors.New("SEQUENCE_TOO_LONG", "predictable sequence detected").WithDetails(map[string]any{
+					"max_allowed": r.Max,
+					"found":       count,
+				})
 			}
 		} else {
 			count = 1
