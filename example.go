@@ -1,4 +1,4 @@
-package passvalidator
+package passw
 
 import (
 	"fmt"
