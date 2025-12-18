@@ -6,8 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExample(t *testing.T) {
-	err := Example("#Password@8249!")
-
-	assert.NoError(t, err)
+func TestValidator(t *testing.T) {
+	assert.NoError(t, Validator("#Password@8249!"))
 }

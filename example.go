@@ -8,7 +8,7 @@ import (
 	"github.com/raulaguila/go-passw/validator"
 )
 
-func Example(pwd string) error {
+func Validator(pwd string) error {
 	engine, err := validator.NewPolicyEngineReloadable("policy.yaml")
 	if err != nil {
 		return err
