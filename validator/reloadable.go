@@ -1,75 +1,14 @@
-package passvalidator
+package validator
 
 import (
-	"fmt"
 	"log"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"gopkg.in/yaml.v3"
-
-	"github.com/raulaguila/passvalidator/errors"
-	"github.com/raulaguila/passvalidator/rules"
+	errPassw "github.com/raulaguila/go-passw/validator/errors"
 )
-
-func LoadPolicyFromYAML(path string) (*PolicyEngine, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var cfg PolicyConfig
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, err
-	}
-
-	engine := NewPolicyEngine()
-
-	if cfg.Policies != nil {
-		if cfg.Policies.Length != nil && cfg.Policies.Length.Enabled {
-			engine.AddRule(rules.NewLengthRule(cfg.Policies.Length.Min, cfg.Policies.Length.Max))
-		}
-
-		if cfg.Policies.Entropy != nil && cfg.Policies.Entropy.Enabled {
-			engine.AddRule(rules.NewEntropyRule(cfg.Policies.Entropy.MinEntropy, cfg.Policies.Entropy.Blacklist, cfg.Policies.Entropy.BlacklistBoost))
-		}
-
-		if cfg.Policies.Sequence != nil && cfg.Policies.Sequence.Enabled {
-			engine.AddRule(rules.NewSequenceRule(cfg.Policies.Sequence.MaxSequence))
-		}
-
-		if cfg.Policies.Category != nil && cfg.Policies.Category.Enabled {
-			categories := []rules.Category{}
-			for _, c := range cfg.Policies.Category.Rules {
-				if !c.Enabled {
-					continue
-				}
-
-				pred, ok := rules.PredicateRegistry[c.Predicate]
-				if !ok {
-					fmt.Printf("predicate não registrado: %s\n", c.Predicate)
-					continue
-				}
-
-				categories = append(categories, rules.Category{
-					Name:      c.Name,
-					Min:       c.Min,
-					Predicate: pred,
-				})
-			}
-			engine.AddRule(rules.NewCategoryRule(categories))
-		}
-	}
-
-	if cfg.Hashing != nil {
-
-	}
-
-	return engine, nil
-}
 
 type PolicyMetrics struct {
 	ReloadCount   uint64
@@ -99,7 +38,7 @@ func NewPolicyEngineReloadable(path string) (*PolicyEngineReloadable, error) {
 	return r, nil
 }
 
-func (r *PolicyEngineReloadable) Validate(password string) []errors.ValidationError {
+func (r *PolicyEngineReloadable) Validate(password string) []errPassw.ValidationError {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.engine.Validate(password)

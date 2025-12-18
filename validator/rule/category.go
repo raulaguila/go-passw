@@ -1,11 +1,11 @@
-package rules
+package rule
 
 import (
 	"fmt"
 	"strings"
 	"unicode"
 
-	"github.com/raulaguila/passvalidator/errors"
+	errPassw "github.com/raulaguila/go-passw/validator/errors"
 )
 
 type Predicate func(rune) bool
@@ -33,7 +33,7 @@ func NewCategoryRule(c []Category) *CategoryRule {
 	return &CategoryRule{Categories: c}
 }
 
-func (r *CategoryRule) Validate(p string) *errors.ValidationError {
+func (r *CategoryRule) Validate(p string) *errPassw.ValidationError {
 	found := map[string]int{}
 
 	for _, c := range r.Categories {
@@ -63,7 +63,7 @@ func (r *CategoryRule) Validate(p string) *errors.ValidationError {
 		for name, v := range missing {
 			parts = append(parts, fmt.Sprintf("%s (min %d, found %d)", name, v["required"], v["found"]))
 		}
-		return errors.New("CATEGORY_MIN_NOT_MET", "Category requirements not met: "+strings.Join(parts, ", ")).WithDetails(map[string]any{
+		return errPassw.New("CATEGORY_MIN_NOT_MET", "Category requirements not met: "+strings.Join(parts, ", ")).WithDetails(map[string]any{
 			"categories": missing,
 		})
 	}

@@ -1,4 +1,4 @@
-module github.com/raulaguila/passvalidator
+module github.com/raulaguila/go-passw
 
 go 1.25
 

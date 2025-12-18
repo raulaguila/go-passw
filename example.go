@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	"errors"
+
+	"github.com/raulaguila/go-passw/validator"
 )
 
 func Example(pwd string) error {
-	engine, err := NewPolicyEngineReloadable("policy.yaml")
+	engine, err := validator.NewPolicyEngineReloadable("policy.yaml")
 	if err != nil {
 		return err
 	}

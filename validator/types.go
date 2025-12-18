@@ -1,4 +1,4 @@
-package passvalidator
+package validator
 
 // PolicyConfig represents the YAML structure
 type PolicyConfig struct {

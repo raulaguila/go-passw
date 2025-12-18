@@ -20,7 +20,7 @@ policies:
 
   entropy:
     enabled: true
-    min_entropy: 45
+    min_entropy: 60
     blacklist: 
       - password
       - admin
