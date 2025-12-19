@@ -1,7 +1,6 @@
 package rule
 
 import (
-	"fmt"
 	"math"
 	"strings"
 	"unicode"
@@ -25,25 +24,18 @@ func NewEntropyRule(minEntropy float64, blacklist []string, blacklistBoost float
 
 func (e EntropyRule) Validate(password string) *errPassw.ValidationError {
 	entropy := e.calculateEntropy(password)
-	strength := e.getPasswordStrength(entropy)
+	penalty := e.calculatePenalty(password)
 
-	fmt.Printf("entropy is: %f - %s\n", entropy, strength)
+	finalEntropy := entropy - penalty
 
-	penalty := 0.0
-	lower := strings.ToLower(password)
-	for _, word := range e.Blacklist {
-		if strings.Contains(lower, strings.ToLower(word)) {
-			penalty += e.BlacklistBoost
-		}
-	}
-
-	if finalEntropy := entropy - penalty; finalEntropy < e.MinEntropy {
-		return errPassw.New("LOW_ENTROPY", strength+" password: insufficient entropy").WithDetails(map[string]any{
-			"strength":      strength,
-			"entropy":       entropy,
-			"penalty":       penalty,
-			"final_entropy": finalEntropy,
-			"required":      e.MinEntropy,
+	if finalEntropy < e.MinEntropy {
+		return errPassw.New("LOW_ENTROPY", "Weak password: insufficient entropy").WithDetails(map[string]any{
+			"strength":          e.getPasswordStrength(finalEntropy),
+			"entropy":           entropy,
+			"penalty":           penalty,
+			"final_entropy":     finalEntropy,
+			"required_entropy":  e.MinEntropy,
+			"required_strength": e.getPasswordStrength(e.MinEntropy),
 		})
 	}
 
@@ -55,16 +47,13 @@ func (e EntropyRule) calculateEntropy(password string) float64 {
 		return 0
 	}
 
-	charsetSize := e.getCharsetSize(password)
-	if charsetSize == 0 {
-		return 0
-	}
-
+	charsetSize := e.calculateCharsetSize(password)
 	entropy := math.Log2(math.Pow(float64(charsetSize), float64(len(password))))
+
 	return entropy
 }
 
-func (e EntropyRule) getCharsetSize(password string) int {
+func (e EntropyRule) calculateCharsetSize(password string) int {
 	hasLower := false
 	hasUpper := false
 	hasDigit := false
@@ -102,6 +91,19 @@ func (e EntropyRule) getCharsetSize(password string) int {
 	}
 
 	return charsetSize
+}
+
+func (e EntropyRule) calculatePenalty(password string) float64 {
+	penalty := 0.0
+	lowerPassword := strings.ToLower(password)
+
+	for _, blacklisted := range e.Blacklist {
+		if strings.Contains(lowerPassword, strings.ToLower(blacklisted)) {
+			penalty += e.BlacklistBoost
+		}
+	}
+
+	return penalty
 }
 
 func (e EntropyRule) getPasswordStrength(entropy float64) string {

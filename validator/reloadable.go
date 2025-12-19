@@ -13,6 +13,8 @@ import (
 type PolicyMetrics struct {
 	ReloadCount   uint64
 	ReloadFailure uint64
+	LastReload    time.Time
+	LastReloadErr error
 }
 
 type PolicyEngineReloadable struct {
@@ -48,6 +50,8 @@ func (r *PolicyEngineReloadable) Metrics() PolicyMetrics {
 	return PolicyMetrics{
 		ReloadCount:   atomic.LoadUint64(&r.metrics.ReloadCount),
 		ReloadFailure: atomic.LoadUint64(&r.metrics.ReloadFailure),
+		LastReload:    r.metrics.LastReload,
+		LastReloadErr: r.metrics.LastReloadErr,
 	}
 }
 
@@ -69,15 +73,18 @@ func (r *PolicyEngineReloadable) watch() {
 		case event := <-watcher.Events:
 			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
 				time.Sleep(100 * time.Millisecond) // debounce
+				r.metrics.LastReload = time.Now()
 
 				engine, err := LoadPolicyFromYAML(r.path)
 				if err != nil {
 					atomic.AddUint64(&r.metrics.ReloadFailure, 1)
+					r.metrics.LastReloadErr = err
 					log.Println("policy reload failed:", err)
 					continue
 				}
 
 				r.mu.Lock()
+				r.metrics.LastReloadErr = nil
 				r.engine = engine
 				r.mu.Unlock()
 
